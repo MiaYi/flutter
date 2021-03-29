@@ -114,16 +114,17 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
     if ([@"share" isEqualToString:call.method]) {
       NSString *shareText = arguments[@"text"];
       NSString *shareSubject = arguments[@"subject"];
+      NSNumber *excludePostToFacebook = arguments[@"excludePostToFacebook"];
+      NSString *url = arguments[@"url"];
 
-      if (shareText.length == 0) {
-        result([FlutterError errorWithCode:@"error"
-                                   message:@"Non-empty text expected"
-                                   details:nil]);
-        return;
+      if (!excludePostToFacebook) {
+        excludePostToFacebook = [NSNumber numberWithInteger:0];
       }
 
       [self shareText:shareText
                  subject:shareSubject
+                  url:url
+        excloudPostToFacebook:excludePostToFacebook.integerValue
           withController:[UIApplication sharedApplication].keyWindow.rootViewController
                 atSource:originRect];
       result(nil);
@@ -164,9 +165,13 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
 
 + (void)share:(NSArray *)shareItems
     withController:(UIViewController *)controller
+    excloudPostToFacebook:(NSInteger)excloudPostToFacebook
           atSource:(CGRect)origin {
   UIActivityViewController *activityViewController =
       [[UIActivityViewController alloc] initWithActivityItems:shareItems applicationActivities:nil];
+  if (excloudPostToFacebook == 1) {
+    activityViewController.excludedActivityTypes = @[UIActivityTypePostToFacebook];
+  }
   activityViewController.popoverPresentationController.sourceView = controller.view;
   activityViewController.popoverPresentationController.sourceRect = origin;
 
@@ -175,10 +180,19 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
 
 + (void)shareText:(NSString *)shareText
            subject:(NSString *)subject
+              url:(NSString *)url
+excloudPostToFacebook:(NSInteger)excloudPostToFacebook
     withController:(UIViewController *)controller
           atSource:(CGRect)origin {
-  ShareData *data = [[ShareData alloc] initWithSubject:subject text:shareText];
-  [self share:@[ data ] withController:controller atSource:origin];
+    NSMutableArray *array = [NSMutableArray new];
+    if (shareText) {
+        ShareData *data = [[ShareData alloc] initWithSubject:subject text:shareText];
+        [array addObject:data];
+    }
+    if (url) {
+        [array addObject:[NSURL URLWithString:url]];
+    }
+    [self share:array withController:controller excloudPostToFacebook:excloudPostToFacebook atSource:origin];
 }
 
 + (void)shareFiles:(NSArray *)paths
@@ -210,7 +224,7 @@ static NSString *const PLATFORM_CHANNEL = @"plugins.flutter.io/share";
     }
   }
 
-  [self share:items withController:controller atSource:origin];
+  [self share:items withController:controller excloudPostToFacebook:0 atSource:origin];
 }
 
 @end

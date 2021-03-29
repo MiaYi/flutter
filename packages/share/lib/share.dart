@@ -34,13 +34,15 @@ class Share {
   static Future<void> share(
     String text, {
     String subject,
+    String url,
+    bool excludePostToFacebook = false,
     Rect sharePositionOrigin,
   }) {
-    assert(text != null);
-    assert(text.isNotEmpty);
     final Map<String, dynamic> params = <String, dynamic>{
       'text': text,
       'subject': subject,
+      'url': url,
+      'excludePostToFacebook': excludePostToFacebook ? 1 : 0,
     };
 
     if (sharePositionOrigin != null) {

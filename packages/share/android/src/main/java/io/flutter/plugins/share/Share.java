@@ -5,11 +5,14 @@
 package io.flutter.plugins.share;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import java.io.File;
@@ -45,17 +48,38 @@ class Share {
     this.activity = activity;
   }
 
-  void share(String text, String subject) {
-    if (text == null || text.isEmpty()) {
-      throw new IllegalArgumentException("Non-empty text expected");
-    }
-
+  void share(String text, String subject, String url, boolean excludePostToFacebook) {
     Intent shareIntent = new Intent();
     shareIntent.setAction(Intent.ACTION_SEND);
-    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+    String shareText = "";
+    if (text != null) {
+      shareText += text;
+    }
+    if (url != null) {
+      if (!shareText.isEmpty()) {
+        shareText += " ";
+      }
+      shareText += url;
+    }
+    shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
     shareIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+
     shareIntent.setType("text/plain");
     Intent chooserIntent = Intent.createChooser(shareIntent, null /* dialog title optional */);
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+
+      ArrayList<ComponentName> targets = new ArrayList<>();
+      // remove facebook which has a broken share intent
+      for (ResolveInfo candidate : context.getPackageManager().queryIntentActivities(shareIntent, 0)) {
+        String packageName = candidate.activityInfo.packageName;
+        if (excludePostToFacebook && packageName.toLowerCase().equals("com.facebook.katana")) {
+          targets.add(new ComponentName(packageName, candidate.activityInfo.name));
+        }
+      }
+      chooserIntent.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, targets.toArray(new ComponentName[0]));
+    }
+
     startActivity(chooserIntent);
   }
 
@@ -70,7 +94,7 @@ class Share {
 
     Intent shareIntent = new Intent();
     if (fileUris.isEmpty()) {
-      share(text, subject);
+      share(text, subject, null, false);
       return;
     } else if (fileUris.size() == 1) {
       shareIntent.setAction(Intent.ACTION_SEND);

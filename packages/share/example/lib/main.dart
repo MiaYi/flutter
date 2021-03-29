@@ -95,6 +95,11 @@ class DemoAppState extends State<DemoApp> {
                       );
                     },
                   ),
+                  RaisedButton(
+                    child: const Text('ShareWithGoogleUrl'),
+                    onPressed: () =>
+                        _onShare(context, url: "https://www.google.com"),
+                  )
                 ],
               ),
             ),
@@ -108,7 +113,7 @@ class DemoAppState extends State<DemoApp> {
     });
   }
 
-  _onShare(BuildContext context) async {
+  _onShare(BuildContext context, {String url}) async {
     // A builder is used to retrieve the context immediately
     // surrounding the RaisedButton.
     //
@@ -126,6 +131,8 @@ class DemoAppState extends State<DemoApp> {
     } else {
       await Share.share(text,
           subject: subject,
+          url: url,
+          excludePostToFacebook: true,
           sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
     }
   }

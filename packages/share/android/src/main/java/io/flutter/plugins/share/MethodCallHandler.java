@@ -27,7 +27,9 @@ class MethodCallHandler implements MethodChannel.MethodCallHandler {
         // Android does not support showing the share sheet at a particular point on screen.
         String text = call.argument("text");
         String subject = call.argument("subject");
-        share.share(text, subject);
+        String url = call.argument("url");
+        Integer excludePostToFacebook = call.argument("excludePostToFacebook");
+        share.share(text, subject, url, excludePostToFacebook == 1);
         result.success(null);
         break;
       case "shareFiles":
