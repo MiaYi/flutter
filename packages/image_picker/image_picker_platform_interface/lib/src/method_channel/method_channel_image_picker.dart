@@ -202,12 +202,13 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
     double? maxWidth,
     double? maxHeight,
     int? imageQuality,
+    int maxImagesAllowed = 10,
   }) async {
     final List<dynamic>? paths = await _getMultiImagePath(
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       imageQuality: imageQuality,
-      maxImagesAllowed: 10,
+      maxImagesAllowed: maxImagesAllowed,
     );
     if (paths == null) return null;
 
