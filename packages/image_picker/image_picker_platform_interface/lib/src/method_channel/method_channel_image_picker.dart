@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 final MethodChannel _channel = MethodChannel('plugins.flutter.io/image_picker');
@@ -40,11 +39,13 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
     double? maxWidth,
     double? maxHeight,
     int? imageQuality,
+    int maxImagesAllowed = 10,
   }) async {
     final List<dynamic>? paths = await _getMultiImagePath(
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       imageQuality: imageQuality,
+      maxImagesAllowed: maxImagesAllowed,
     );
     if (paths == null) return null;
 
@@ -55,6 +56,7 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
     double? maxWidth,
     double? maxHeight,
     int? imageQuality,
+    required int maxImagesAllowed,
   }) {
     if (imageQuality != null && (imageQuality < 0 || imageQuality > 100)) {
       throw ArgumentError.value(
@@ -75,6 +77,7 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
         'maxWidth': maxWidth,
         'maxHeight': maxHeight,
         'imageQuality': imageQuality,
+        'maxImagesAllowed': maxImagesAllowed,
       },
     );
   }
@@ -204,6 +207,7 @@ class MethodChannelImagePicker extends ImagePickerPlatform {
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       imageQuality: imageQuality,
+      maxImagesAllowed: 10,
     );
     if (paths == null) return null;
 
